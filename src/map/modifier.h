@@ -319,14 +319,15 @@ enum class Mod
     ENFEEBLING_MAGIC_RECAST = 1184, // Recast delay (percent, usually negative)
     ENHANCING_MAGIC_RECAST  = 1185, // Recast delay (percent, usually negative)
     DELAY                   = 171,  // Increase/Decrease Delay
-    RANGED_DELAY            = 172,  // Increase/Decrease Ranged Delay
+    RANGED_DELAY            = 172,  // Increase/Decrease Ranged Delay. This is in-game delay not milliseconds
     MARTIAL_ARTS            = 173,  // The integer amount of delay to reduce from H2H weapons' base delay. (TRAIT)
     SKILLCHAINBONUS         = 174,  // Damage bonus applied to skill chain damage.  Modifier from effects/traits
     SKILLCHAINDMG           = 175,  // Damage bonus applied to skill chain damage.  Modifier from gear (multiplicative after effect/traits)
     MAX_SWINGS              = 978,  // Max swings for "Occasionally attacks X times"
     ADDITIONAL_SWING_CHANCE = 979,  // Chance that allows for an additional swing despite of multiple hits, mostly for Amood weapons
 
-    MAGIC_DAMAGE = 311, // Magic damage added directly to the spell's base damage
+    MAGIC_DAMAGE      = 311,  // Magic damage added directly to the spell's base damage
+    MP_COST_REDUCTION = 1197, // Reduces spell MP cost by a percentage.
 
     // FOOD!
     FOOD_HPP      = 176, //
@@ -1152,7 +1153,7 @@ enum class Mod
     // The spares take care of finding the next ID to use so long as we don't forget to list IDs that have been freed up by refactoring.
     // 570 through 825 used by WS DMG mods these are not spares.
     //
-    // SPARE IDs: 1197 and onward
+    // SPARE IDs: 1198 and onward
 };
 
 // temporary workaround for using enum class as unordered_map key until compilers support it

@@ -23,6 +23,7 @@
 
 #include "common/database.h"
 #include "common/logging.h"
+#include "common/settings.h"
 #include "common/timer.h"
 #include "common/utils.h"
 
@@ -57,12 +58,11 @@
 #include "items.h"
 #include "items/item_weapon.h"
 #include "job_points.h"
-#include "los/zone_los.h"
+#include "map/navmesh/navmesh.h"
 #include "map_engine.h"
 #include "mob_modifier.h"
 #include "mobskill.h"
 #include "modifier.h"
-#include "navmesh.h"
 #include "notoriety_container.h"
 #include "packets/pet_sync.h"
 #include "packets/s2c/0x029_battle_message.h"
@@ -79,6 +79,8 @@
 #include "utils/petutils.h"
 #include "weapon_skill.h"
 #include "zoneutils.h"
+
+#include <map/ximesh/ximesh.h>
 
 /************************************************************************
  *                                                                       *
@@ -629,7 +631,7 @@ int32 CalculateEnspellDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender,
             runeDPS = PWeapon->getDPS();
         }
 
-        if (PAttacker->m_dualWield)
+        if (PAttacker->IsDualWielding())
         {
             runeDPS /= 2; // DPS is divided evenly between hands derived from mainhand only
         }
@@ -1767,7 +1769,7 @@ float GetRangedDamageRatio(CBattleEntity* PAttacker, CBattleEntity* PDefender, b
         ShowError("battleutils::GetRangedDamageRatio() failed to run lua calls");
     }
 
-    return pDIF;
+    return std::max(pDIF, 0.f);
 }
 
 int16 CalculateBaseTP(CBattleEntity* PEntity, int32 delay)
@@ -1815,7 +1817,7 @@ auto GetBaseDelay(CBattleEntity* PEntity) -> uint16
         CItemWeapon* PWeapon = dynamic_cast<CItemWeapon*>(PMobEntity->m_Weapons[SLOT_MAIN]);
         if (PWeapon)
         {
-            baseDelay = std::round(PWeapon->getBaseDelay() * 60.0 / 1000.0); // there is some precision loss that results in delays of 319.98 instead of 320, etc, so round to nearest.
+            baseDelay = PWeapon->getBaseDelay(); // there is some precision loss that results in delays of 319.98 instead of 320, etc, so round to nearest.
         }
     }
 
@@ -1855,14 +1857,14 @@ auto GetBaseRangedDelay(CBattleEntity* PEntity) -> uint16
         CItemWeapon* PWeapon = dynamic_cast<CItemWeapon*>(PMobEntity->m_Weapons[SLOT_MAIN]);
         if (PWeapon)
         {
-            baseDelay = std::round(PWeapon->getBaseDelay() * 60.0 / 1000.0); // there is some precision loss that results in delays of 319.98 instead of 320, etc, so round to nearest.
+            baseDelay = PWeapon->getBaseDelay(); // there is some precision loss that results in delays of 319.98 instead of 320, etc, so round to nearest.
         }
     }
 
     return baseDelay;
 }
 
-auto CalculateTPFromDamageDealt(CBattleEntity* PAttacker, bool isZanshin) -> int32
+auto CalculateTPFromDamageDealt(CBattleEntity* PAttacker, const bool& isZanshin, const SLOTTYPE& slot) -> int32
 {
     if (PAttacker == nullptr)
     {
@@ -1870,9 +1872,14 @@ auto CalculateTPFromDamageDealt(CBattleEntity* PAttacker, bool isZanshin) -> int
         return 0;
     }
 
-    int32 tpReturn = luautils::callGlobal<int32>("xi.combat.tp.getSingleMeleeHitTPReturn", PAttacker, isZanshin);
-
-    return tpReturn;
+    if (slot == SLOT_RANGED || slot == SLOT_AMMO)
+    {
+        return luautils::callGlobal<int32>("xi.combat.tp.getSingleRangedHitTPReturn", PAttacker);
+    }
+    else
+    {
+        return luautils::callGlobal<int32>("xi.combat.tp.getSingleMeleeHitTPReturn", PAttacker, isZanshin);
+    }
 }
 
 auto CalculateTPFromDamageTaken(CBattleEntity* PAttacker, CBattleEntity* PDefender, int32 damage, uint16 delay) -> int32
@@ -2080,7 +2087,7 @@ int32 TakePhysicalDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, PHY
 
         if (isBlocked)
         {
-            uint8 absorb = 100;
+            uint8 absorb = 50; // TODO: get trust/pet/etc absorb percents
 
             // shield def bonus is a flat raw damage reduction that occurs before absorb
             // however do not reduce below 0 or if damage is negative
@@ -2089,52 +2096,22 @@ int32 TakePhysicalDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, PHY
                 damage = std::max(0, damage - PDefender->getMod(Mod::SHIELD_DEF_BONUS));
             }
 
+            // Shield Mastery
+            if (std::max(damage - PDefender->getMod(Mod::STONESKIN), 0) > 0 &&
+                PDefender->getMod(Mod::SHIELD_MASTERY_TP))
+            {
+                // If the attack was blocked and has shield mastery, add shield mastery TP bonus
+                // unblocked damage (before block but as if affected by phalanx) must be greater than zero
+                PDefender->addTP(PDefender->getMod(Mod::SHIELD_MASTERY_TP));
+            }
+
             if (const auto PChar = dynamic_cast<CCharEntity*>(PDefender))
             {
                 CItemEquipment* slotSub = PChar->getEquip(SLOT_SUB);
                 if (slotSub && slotSub->IsShield())
                 {
                     absorb = std::clamp(100 - slotSub->getShieldAbsorption(), 0, 100);
-
-                    // Shield Mastery
-                    if ((std::max(damage - (PDefender->getMod(Mod::PHALANX) + PDefender->getMod(Mod::STONESKIN)), 0) > 0) &&
-                        PDefender->getMod(Mod::SHIELD_MASTERY_TP))
-                    {
-                        // If the player blocked with a shield and has shield mastery, add shield mastery TP bonus
-                        // unblocked damage (before block but as if affected by stoneskin/phalanx) must be greater than zero
-                        PDefender->addTP(PDefender->getMod(Mod::SHIELD_MASTERY_TP));
-                    }
                 }
-            }
-            else if (PDefender->objtype == TYPE_PET)
-            {
-                absorb = 50;
-
-                // Shield Mastery
-                if ((std::max(damage - (PDefender->getMod(Mod::PHALANX) + PDefender->getMod(Mod::STONESKIN)), 0) > 0) &&
-                    (PDefender->getMod(Mod::SHIELD_MASTERY_TP)))
-                {
-                    // If the pet blocked with a shield and has shield mastery, add shield mastery TP bonus
-                    // unblocked damage (before block but as if affected by stoneskin/phalanx) must be greater than zero
-                    PDefender->addTP(PDefender->getMod(Mod::SHIELD_MASTERY_TP));
-                }
-            }
-            else if (PDefender->objtype == TYPE_TRUST)
-            {
-                absorb = 50;
-
-                // Shield Mastery
-                if ((std::max(damage - (PDefender->getMod(Mod::PHALANX) + PDefender->getMod(Mod::STONESKIN)), 0) > 0) &&
-                    (PDefender->getMod(Mod::SHIELD_MASTERY_TP)))
-                {
-                    // If the trust blocked with a shield and has shield mastery, add shield mastery TP bonus
-                    // unblocked damage (before block but as if affected by stoneskin/phalanx) must be greater than zero
-                    PDefender->addTP(PDefender->getMod(Mod::SHIELD_MASTERY_TP));
-                }
-            }
-            else
-            {
-                absorb = 50;
             }
 
             // Reprisal
@@ -2265,7 +2242,7 @@ int32 TakePhysicalDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, PHY
         {
             bool isZanshin = physicalAttackType == PHYSICAL_ATTACK_TYPE::ZANSHIN;
 
-            int16 attackerTPReturn = CalculateTPFromDamageDealt(PAttacker, isZanshin);
+            int16 attackerTPReturn = CalculateTPFromDamageDealt(PAttacker, isZanshin, static_cast<SLOTTYPE>(slot));
 
             PAttacker->addTP((int16)(tpMultiplier * attackerTPReturn));
         }
@@ -2291,11 +2268,6 @@ int32 TakePhysicalDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, PHY
     else if (PDefender->objtype == TYPE_MOB)
     {
         ((CMobEntity*)PDefender)->PEnmityContainer->UpdateEnmityFromDamage(PAttacker, 0);
-    }
-
-    if (PAttacker->objtype == TYPE_PC && !isRanged && !isCounter)
-    {
-        PAttacker->StatusEffectContainer->DelStatusEffectsByFlag(EFFECTFLAG_ATTACK);
     }
 
     return damage;
@@ -2399,7 +2371,7 @@ int32 TakeWeaponskillDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, 
         if (primary)
         // Calculate TP Return from WS
         {
-            int16 baseTp = CalculateTPFromDamageDealt(PAttacker, false);
+            int16 baseTp = CalculateTPFromDamageDealt(PAttacker, false, static_cast<SLOTTYPE>(slot));
 
             standbyTp = bonusTP + (int16)((tpMultiplier * baseTp));
         }
@@ -2423,11 +2395,6 @@ int32 TakeWeaponskillDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, 
     else if (PDefender->objtype == TYPE_MOB)
     {
         ((CMobEntity*)PDefender)->PEnmityContainer->UpdateEnmityFromDamage(PAttacker, 0);
-    }
-
-    if (!isRanged)
-    {
-        PAttacker->StatusEffectContainer->DelStatusEffectsByFlag(EFFECTFLAG_ATTACK);
     }
 
     // Apply TP
@@ -2766,7 +2733,7 @@ float GetDamageRatio(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool is
         ShowError("battleutils::GetDamageRatio() failed to run lua calls");
     }
 
-    return pDIF;
+    return std::max(pDIF, 0.f);
 }
 
 /************************************************************************
@@ -3995,6 +3962,7 @@ inline bool areInLine(uint8 firstEntityWorldAngle, CBattleEntity* anchorEntity, 
 CBattleEntity* getAvailableTrickAttackChar(CBattleEntity* taUser, CBattleEntity* PMob)
 {
     TracyZoneScoped;
+
     if (!taUser->StatusEffectContainer->HasStatusEffect(EFFECT_TRICK_ATTACK))
     {
         return nullptr;
@@ -4204,8 +4172,8 @@ uint16 doSoulEaterEffect(CCharEntity* m_PChar, uint32 damage)
         // Souleater's HP consumed is 10% (base) + x% from gear (ONLY HIGHEST) + x% from gear augments.
         float souleaterBonus    = m_PChar->getMaxGearMod(Mod::SOULEATER_EFFECT) * 0.01;
         float souleaterBonusII  = m_PChar->getMod(Mod::SOULEATER_EFFECT_II) * 0.01;
-        float stalwartSoulBonus = 1 - static_cast<float>(m_PChar->getMod(Mod::STALWART_SOUL)) / 100;
-        float bonusDamage       = m_PChar->health.hp * (0.1f + souleaterBonus + souleaterBonusII);
+        float stalwartSoulBonus = 1.f - std::max(static_cast<float>(m_PChar->getMod(Mod::STALWART_SOUL)) / 100, 0.f);
+        float bonusDamage       = m_PChar->health.hp * (0.1f + std::max(souleaterBonus + souleaterBonusII, 0.f));
 
         if (bonusDamage >= 1)
         {
@@ -5272,24 +5240,19 @@ void DrawIn(CBattleEntity* PTarget, const position_t pos, const float offset, co
         return;
     }
 
-    // Make sure we can raycast to that position
-    // from the position's "eyeline" to the ground where we want to draw players in to
-    if (PTarget->loc.zone->lineOfSight)
+    // If geometry blocks the path from the source eyeline to the draw-in point, abort the
+    // draw-in - navmesh snapToValidPosition below will handle snapping to a valid position.
+    constexpr float ENTITY_HEIGHT = 2.0f;
+
+    const auto src = Vector3{ pos.x, pos.y - ENTITY_HEIGHT, pos.z };
+    const auto dst = Vector3{ nearEntity.x, nearEntity.y, nearEntity.z };
+    if (PTarget->loc.zone->xiMesh()->rayIntersect(src, dst))
     {
-        const auto entityHeight = 2.0f;
-        const auto posEyeline   = position_t{ pos.x, pos.y - entityHeight, pos.z, 0, 0 };
-        if (const auto optHit = PTarget->loc.zone->lineOfSight->Raycast(posEyeline, nearEntity))
-        {
-            auto hit   = *optHit;
-            nearEntity = { hit.x, hit.y, hit.z, 0, 0 };
-        }
+        return;
     }
 
     // Snap nearEntity to a guaranteed valid position
-    if (PTarget->loc.zone->m_navMesh)
-    {
-        PTarget->loc.zone->m_navMesh->snapToValidPosition(nearEntity);
-    }
+    PTarget->loc.zone->navMesh()->snapToValidPosition(nearEntity);
 
     // Move the target a little higher, just in case
     nearEntity.y -= 1.0f;
@@ -5928,6 +5891,13 @@ uint16 CalculateSpellCost(CBattleEntity* PEntity, CSpell* PSpell)
             cost += (int16)(base * (PEntity->getMod(Mod::WHITE_MAGIC_COST) / 100.0f));
         }
     }
+
+    const auto mpCostReduction = PEntity->getMod(Mod::MP_COST_REDUCTION);
+    if (mpCostReduction > 0)
+    {
+        cost = cost * (1.f - static_cast<float>(mpCostReduction) / 100.f);
+    }
+
     if (xirand::GetRandomNumber(100) < (PEntity->getMod(Mod::NO_SPELL_MP_DEPLETION)))
     {
         cost = 0;
@@ -5978,6 +5948,14 @@ timer::duration CalculateSpellRecastTime(CBattleEntity* PEntity, CSpell* PSpell)
     auto base   = PSpell->getRecastTime();
     auto recast = base;
 
+    const auto recastReductionCap                 = settings::get<float>("map.SPELL_RECAST_REDUCTION_CAP");
+    const auto alacrityCelerityRecastReductionCap = recastReductionCap + 10.0f;
+
+    const auto recastCapFloor = [base](float reductionCap)
+    {
+        return std::chrono::floor<std::chrono::milliseconds>(base * (1.0f - (reductionCap / 100.0f)));
+    };
+
     // get Fast Cast reduction, caps at 80%/2 = 40% reduction in recast -- https://www.bg-wiki.com/ffxi/Fast_Cast
     float fastCastReduction = std::clamp(static_cast<float>(PEntity->getMod(Mod::FASTCAST)) / 2.0f, 0.0f, 40.0f);
     // no known cap (limited by Inspiration merits + Futhark Trousers augment for a total retail cap value of 60%/2 = 30%)
@@ -6027,7 +6005,7 @@ timer::duration CalculateSpellRecastTime(CBattleEntity* PEntity, CSpell* PSpell)
         recast = std::chrono::floor<std::chrono::milliseconds>(recast * 1.5f);
     }
 
-    recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.2f));
+    recast = std::max<timer::duration>(recast, recastCapFloor(recastReductionCap));
 
     int32 recastMod = 0;
     switch (PSpell->getSkillType())
@@ -6075,13 +6053,13 @@ timer::duration CalculateSpellRecastTime(CBattleEntity* PEntity, CSpell* PSpell)
             recast = std::chrono::floor<std::chrono::milliseconds>(recast * ((100.0f + PEntity->getMod(Mod::BLACK_MAGIC_RECAST)) / 100.0f));
         }
 
-        recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.2f)); // recap to 80%
+        recast = std::max<timer::duration>(recast, recastCapFloor(recastReductionCap));
 
         // https://www.bg-wiki.com/ffxi/Alacrity
         if (PEntity->StatusEffectContainer->HasStatusEffect(EFFECT_ALACRITY))
         {
-            recast = std::chrono::floor<std::chrono::milliseconds>(recast * 0.60);                                  // 40% reduction from Alacrity alone
-            recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.2f)); // recap to 80%
+            recast = std::chrono::floor<std::chrono::milliseconds>(recast * 0.60); // 40% reduction from Alacrity alone
+            recast = std::max<timer::duration>(recast, recastCapFloor(alacrityCelerityRecastReductionCap));
 
             // Only apply bonus mod if the spell element matches the weather, this is allowed to go over the 80% cap to a 90% cap.
             if (battleutils::WeatherMatchesElement(battleutils::GetWeather(PEntity, false), static_cast<uint8>(PSpell->getElement())))
@@ -6089,7 +6067,7 @@ timer::duration CalculateSpellRecastTime(CBattleEntity* PEntity, CSpell* PSpell)
                 uint16 bonus = PEntity->getMod(Mod::ALACRITY_CELERITY_EFFECT);
 
                 recast = std::chrono::floor<std::chrono::milliseconds>(recast * ((100 - bonus) / 100.0f));
-                recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.1f)); // cap to 90% reduction
+                recast = std::max<timer::duration>(recast, recastCapFloor(alacrityCelerityRecastReductionCap));
             }
         }
     }
@@ -6117,21 +6095,21 @@ timer::duration CalculateSpellRecastTime(CBattleEntity* PEntity, CSpell* PSpell)
             recast = std::chrono::floor<std::chrono::milliseconds>(recast * ((100.0f + PEntity->getMod(Mod::WHITE_MAGIC_RECAST)) / 100.0f));
         }
 
-        recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.2f)); // recap to 80%
+        recast = std::max<timer::duration>(recast, recastCapFloor(recastReductionCap));
 
         // https://www.bg-wiki.com/ffxi/Celerity
         if (PEntity->StatusEffectContainer->HasStatusEffect(EFFECT_CELERITY))
         {
-            recast = std::chrono::floor<std::chrono::milliseconds>(recast * 0.60);                                  // 40% reduction from Celerity alone
-            recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.2f)); // recap to 80%
+            recast = std::chrono::floor<std::chrono::milliseconds>(recast * 0.60); // 40% reduction from Celerity alone
+            recast = std::max<timer::duration>(recast, recastCapFloor(alacrityCelerityRecastReductionCap));
 
-            // Only apply bonus mod if the spell element matches the weather, this is allowed to go over the 80% cap to a 90% cap.
+            // Only apply bonus mod if the spell element matches the weather.
             if (battleutils::WeatherMatchesElement(battleutils::GetWeather(PEntity, false), static_cast<uint8>(PSpell->getElement())))
             {
                 uint16 bonus = PEntity->getMod(Mod::ALACRITY_CELERITY_EFFECT);
 
                 recast = std::chrono::floor<std::chrono::milliseconds>(recast * ((100 - bonus) / 100.0f));
-                recast = std::max<timer::duration>(recast, std::chrono::floor<std::chrono::milliseconds>(base * 0.1f)); // cap to 90% reduction
+                recast = std::max<timer::duration>(recast, recastCapFloor(alacrityCelerityRecastReductionCap));
             }
         }
     }
