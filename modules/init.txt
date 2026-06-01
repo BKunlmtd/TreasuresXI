@@ -37,4 +37,11 @@
 # Live example:
 
 custom/commands/
-custom/lua/test_npcs_in_gm_home.lua
+custom/lua/announce_player_login.lua
+custom/lua/homepoint_heal.lua
+custom/lua/LQS.lua
+custom/lua/lqs_beastcoin_exchange.lua
+custom/sql/zone_ip.sql
+custom/cpp/ah_pagination.cpp
+custom/cpp/lqs_util.cpp
+abyssea/lua/era_HNM_system.lua

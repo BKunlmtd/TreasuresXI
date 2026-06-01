@@ -16,50 +16,44 @@ local prizes =
         {
             xi.item.BEASTMENS_SEAL,
             xi.item.KINDREDS_SEAL,
-            xi.item.KINDREDS_CREST,
-            xi.item.HIGH_KINDREDS_CREST,
-            xi.item.SACRED_KINDREDS_CREST,
-            -- 1857, -- Cordial Invite
-            -- 2306, -- Martial Ball Invite
-            -- 5364, -- Training Grounds Key
-            -- 2487, -- Mercenary Camp Entry Slip
-            -- 5741, -- Flask Of Pest Repellent
-            -- 3557, -- Athena Orb
-            -- 5113, -- Cracked Nut
-            -- 3541, -- Seasoning Stone
-            -- 3543, -- Fossilized Fang
-            -- 3542, -- Fossilized Bone
-            -- 5724, -- Pungent Powder
-            -- 6535, -- Pungent Powder II
-            -- 9890, -- Tarazacum Orb
+			xi.item.ALLIANCE_SHIRT,
+			xi.item.ALLIANCE_PANTS,
+			xi.item.ALLIANCE_BOOTS,
+			xi.item.PINCH_OF_PUNGENT_POWDER,
         },
     },
 
     [5] =
     {
-        ['price'] = 100,
+        ['price'] = 50,
         ['items'] =
         {
-            xi.item.MOG_KUPON_I_S1,  -- Mog Kupon I-S1
-            xi.item.EUDAEMON_BLADE,  -- Eudaemon Blade
-            xi.item.EUDAEMON_CAPE,  -- Eudaemon Cape
-            xi.item.EUDAEMON_RING,  -- Eudaemon Ring
-            xi.item.EUDAEMON_SASH,  -- Eudaemon Sash
-            xi.item.EUDAEMON_SHIELD,  -- Eudaemon Shield
-            xi.item.DRILL_CALAMARY, -- Drill Calamary
-            xi.item.DWARF_PUGIL, -- Dwarf Pugil
-            xi.item.ASTRAL_CUBE,  -- Astral Cube
-            -- 9891,  -- Zinnia Orb
-            -- 10112, -- Cipher: Zeid
-            -- 10113, -- Cipher: Lion
-            xi.item.CIPHER_OF_NAJAS_ALTER_EGO, -- Cipher: Naja
-            xi.item.CIPHER_OF_LEHKOS_ALTER_EGO, -- Cipher: Lehko
-            -- 10124, -- Cipher: Luzaf
-            -- 10125, -- Cipher: Najelith
-            -- 10129, -- Cipher: Domina
-            -- 10134, -- Cipher: S. Sibyl
-            -- 10142, -- Cipher: Karaha
-            -- 10149, -- Cipher: Areuhat
+			xi.item.PUPILS_SHIRT,
+            xi.item.PUPILS_CAMISA,
+			xi.item.PUPILS_TROUSERS,
+			xi.item.PUPILS_SHOES,
+			xi.item.FIRETONGUE,
+			xi.item.EXCALIPOOR,
+			xi.item.PIECE_OF_COPSE_CANDY,
+			xi.item.FLASK_OF_DRAGON_FRUIT_AU_LAIT,
+			xi.item.BOTTLE_OF_KITRON_JUICE,
+			xi.item.YELLOW_CURRY_BUN,
+			xi.item.RED_CURRY_BUN,
+			xi.item.BLACK_CURRY_BUN,
+			xi.item.PLATE_OF_SQUID_SUSHI,
+			xi.item.PLATE_OF_SOLE_SUSHI,
+			xi.item.PLATE_OF_BREAM_SUSHI,
+			xi.item.PLATE_OF_DORADO_SUSHI,
+			xi.item.SERVING_OF_ICECAP_ROLANBERRY,
+			xi.item.COCONUT_RUSK,
+			xi.item.KITRON_MACARON,
+			xi.item.MARINGNA,
+			xi.item.PIECE_OF_SHIROMOCHI,
+			xi.item.PIECE_OF_KUSAMOCHI,
+			xi.item.PIECE_OF_AKAMOCHI,
+			xi.item.ROLANBERRY_DAIFUKU,
+			xi.item.BEAN_DAIFUKU,
+			xi.item.GRAPE_DAIFUKU,
         },
     },
 
@@ -68,21 +62,17 @@ local prizes =
         ['price'] = 100,
         ['items'] =
         {
-            -- 10136, -- Cipher: Uka
-            -- 10141, -- Cipher: Kuyin
-            -- 10144, -- Cipher: Abenzio
-            -- 10145, -- Cipher: Rughadjeen
-            -- 10150, -- Cipher: Lhe
-            -- 10151, -- Cipher: Mayakov
-            -- 10155, -- Cipher: Brygid
-            -- 10156, -- Cipher: Mildaurion
-            -- 10161, -- Cipher: Rongelouts
-            -- 10166, -- Cipher: Robel-Akbel
-            -- 10178, -- Cipher: Ullegore
-            -- 10179, -- Cipher: Teodor
-            -- 10183, -- Cipher: Darrcuiln
-            xi.item.EXCALIPOOR, -- Excalipoor
-            xi.item.PIECE_OF_COPSE_CANDY,  -- Copse Candy
+			xi.item.IRON_QUIVER,
+			xi.item.SPARTAN_BULLET_POUCH,
+			xi.item.TOOLBAG_SHIHEI,
+			xi.item.CALIBER_RING,
+			xi.item.KYUKOTO,
+			xi.item.ARTEMISS_BOW,
+			xi.item.MUTSUNOKAMI,
+			xi.item.ESOTERIC_ATHAME,
+			xi.item.LIZARD_FANGS,
+			xi.item.FELINE_HAGOITA,
+			xi.item.DHALMEL_TROUSERS,
         },
     },
 
@@ -91,27 +81,24 @@ local prizes =
         ['price'] = 300,
         ['items'] =
         {
-            -- 10187, -- Cipher: Shantotto II
-            xi.item.MOUNT_GOOBBUE, -- ♪Goobbue
-            xi.item.MOUNT_CRAB, -- ♪Crab
-            xi.item.MOUNT_BEETLE, -- ♪Beetle
-            -- TODO: The other mounts
-            xi.item.CUMULUS_MASQUE, -- Cumulus Masque
-            xi.item.BLIZZARD_BRAND, -- Blizzard Brand
-            -- 25658, -- Wyrm. Masque +1
-            -- 25757, -- Wyrmking Suit +1
-            -- 5854,  -- Frayed Pouch (B)
-            -- 5855,  -- Frayed Pouch (A)
-            -- 5856,  -- Frayed Pouch (G)
-            -- 5857,  -- Frayed Pouch (D)
-            -- 5858,  -- Frayed Pouch (R)
-            -- 5946,  -- Frayed Sack (D)
-            -- 5947,  -- Frayed Sack (L)
-            -- 4064,  -- Rem's Tale Ch.1
-            -- 4065,  -- Rem's Tale Ch.2
-            -- 4066,  -- Rem's Tale Ch.3
-            -- 4067,  -- Rem's Tale Ch.4
-            -- 4068,  -- Rem's Tale Ch.5
+			xi.item.ARK_TACHI,
+			xi.item.ARK_SABER,
+			xi.item.ARK_SCYTHE,
+			xi.item.GLINTING_SHIELD,
+			xi.item.DIAMOND_BUCKLER,
+			xi.item.EUDAEMON_BLADE,
+			xi.item.EUDAEMON_CAPE,
+			xi.item.EUDAEMON_RING,
+			xi.item.EUDAEMON_SASH,
+			xi.item.EUDAEMON_SHIELD,
+			xi.item.CARBIE_CAP,
+			xi.item.MORBOL_CAP,
+			xi.item.WHITE_RARAB_CAP,
+			xi.item.KNIT_CAP,
+			xi.item.BOMB_MASQUE,
+			xi.item.KYUKA_UCHIWA,
+			xi.item.KORRIGAN_SUIT,
+			xi.item.KORRIGAN_MASQUE,
         },
     },
 
@@ -120,64 +107,109 @@ local prizes =
         ['price'] = 500,
         ['items'] =
         {
-            -- TODO: Special month-to-month things
-            xi.item.MOUNT_DHALMEL, -- ♪Dhalmel
+            xi.item.MOUNT_CRAB,
+            xi.item.MOUNT_BOMB, 
+			xi.item.MOUNT_CRAWLER,
+			xi.item.MOUNT_BEETLE,
+            xi.item.MOUNT_TIGER,
+			xi.item.KUPO_ROD,
+			xi.item.KUPO_SUIT,
+			xi.item.KUPO_MASQUE,
+			xi.item.CHOCOBO_MASQUE,
+			xi.item.CHOCOBO_SUIT,
+			xi.item.CHOCOBO_WAND,
+            xi.item.LYCOPODIUM_MASQUE,
+			xi.item.CAIT_SITH_CAP,
+			xi.item.CHOCOBO_SHIRT,
+			xi.item.DESTRIER_BERET,
+			xi.item.SPROUT_BERET,
+			xi.item.ADENIUM_MASQUE,
+			xi.item.ADENIUM_SUIT,
         },
-
     },
 
     [21] =
     {
-        ['price'] = 750,
+        ['price'] = 1000,
         ['items'] =
-        {
-            xi.item.COPY_OF_MELODIOUS_PLANS, -- Melodious Plans
-            xi.item.TIMBRE_CASE_KIT, -- Timbre Case Kit
-            xi.item.MUSICHINERY_KIT, -- Musichinery Kit
-            -- 9079, -- Kitchen Brick
-            -- 9080, -- Kitchen Stove
-            -- 9081, -- Kitchen Plate
-            xi.item.JUG_OF_HONEY_WINE, -- Honey Wine
-            xi.item.BEASTLY_SHANK, -- Beastly Shank
-            xi.item.CLUMP_OF_BLUE_PONDWEED, -- Blue Pondweed
-            -- 1873, -- Brigand's Chart
-            -- 1874, -- Pirate's Chart
-            -- 6381, -- Fisherman's Feast
-            -- 4069, -- Copy Of Rem's Tale, Chapter 6
-            -- 4070, -- Copy Of Rem's Tale, Chapter 7
-            -- 4071, -- Copy Of Rem's Tale, Chapter 8
-            -- 4072, -- Copy Of Rem's Tale, Chapter 9
-            -- 4073, -- Copy Of Rem's Tale, Chapter 10
+        {	
+			xi.item.MOUNT_XZOMIT,
+			xi.item.MOUNT_TULFAIRE,
+			xi.item.MOUNT_HIPPOGRYPH,
+			xi.item.MOUNT_MAGIC_POT,
+			xi.item.MOUNT_NOBLE_CHOCOBO,
+			xi.item.DEIMOSS_MASK,
+			xi.item.DEIMOSS_CUIRASS,
+			xi.item.DEIMOSS_GAUNTLETS,
+			xi.item.DEIMOSS_CUISSES,
+			xi.item.DEIMOSS_LEGGINGS,
+			xi.item.TALARIA,
+			xi.item.NOMAD_MOOGLE_STATUE,
+			xi.item.NOMAD_MOOGLE_ROD,
+			xi.item.MOOGLES_LARGESSE,
+			xi.item.INVISIBLE_RING,
+			xi.item.SNEAK_RING,
+			xi.item.DEODORIZE_RING,
+			xi.item.RERAISE_RING,
+			xi.item.PELICAN_RING,
         },
     },
 
     [25] =
     {
-        ['price'] = 1000,
+        ['price'] = 1500,
         ['items'] =
         {
-            -- 6499,  -- Patio Design Plans
-            xi.item.FACILITY_RING, -- Facility Ring
-            xi.item.CALIBER_RING, -- Caliber Ring
-            -- 6486,  -- Frayed Sack (Pel)
-            -- 6487,  -- Frayed Sack (Fer)
-            -- 6488,  -- Frayed Sack (Tau)
+			xi.item.PAHLUWAN_QALANSUWA,
+			xi.item.PAHLUWAN_KHAZAGAND,
+			xi.item.PAHLUWAN_DASTANAS,
+			xi.item.PAHLUWAN_SERAWEELS,
+			xi.item.PAHLUWAN_CRACKOWS,
+			xi.item.ECHAD_RING,
+			xi.item.SERENE_RING,
+			xi.item.RABBIT_CHARM,
+			xi.item.PEACOCK_CHARM,
+			xi.item.GENIN_EARRING,
+			xi.item.IMMORTALS_EARRING,
+			xi.item.OCHIMUSHA_KOTE,
+			xi.item.WOODSMAN_RING,
+			xi.item.WRESTLERS_MANTLE,
+			xi.item.OPTICAL_HAT,
+			xi.item.TIPHIA_STING,
+			xi.item.AMEMET_MANTLE,
+			xi.item.ZENITH_CROWN,
+			xi.item.BLOODBEAD_EARRING,
+			xi.item.FORAGERS_MANTLE,
+			xi.item.CHARGER_MANTLE,
+			xi.item.JAEGER_MANTLE,
+			xi.item.GUNNERS_MANTLE,
+			xi.item.BOXERS_MANTLE,
+			xi.item.STEALTH_EARRING,
+			xi.item.MUSICAL_EARRING,
+			xi.item.BRUTAL_EARRING,
         },
     },
 
     [29] =
     {
-        ['price'] = 1500,
+        ['price'] = 2000,
         ['items'] =
         {
-            xi.item.CUP_OF_SWEET_TEA, -- Sweet Tea
-            xi.item.SAVORY_SHANK, -- Savory Shank
-            xi.item.CLUMP_OF_RED_PONDWEED, -- Red Pondweed
-            -- 8720, -- Maliya. Coral Orb
-            -- 8722, -- Hepatizon Ingot
-            -- 8724, -- Beryllium Ingot
-            -- 8726, -- Exalted Lumber
-            -- 8728, -- Sif's Macrame
+			xi.item.HOMAM_ZUCCHETTO,
+			xi.item.HOMAM_CORAZZA,
+			xi.item.HOMAM_MANOPOLAS,
+			xi.item.HOMAM_COSCIALES,
+			xi.item.HOMAM_GAMBIERAS,
+			xi.item.NASHIRA_TURBAN,
+			xi.item.NASHIRA_MANTEEL,
+			xi.item.NASHIRA_GAGES,
+			xi.item.NASHIRA_SERAWEELS,
+			xi.item.NASHIRA_CRACKOWS,
+			xi.item.CERBERUS_MANTLE,
+			xi.item.AESIR_MANTLE,
+			xi.item.LOQUACIOUS_EARRING,
+			xi.item.FLAWLESS_RIBBON,
+			xi.item.KIRINS_POLE,
         },
     },
 }
