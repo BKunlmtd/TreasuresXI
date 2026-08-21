@@ -196,16 +196,16 @@ mission.sections =
                     -- the key into a key item, allowing the player to drop the inventory key for space.
                     if
                         player:getMissionStatus(mission.areaId) == 4 and
-                        npcUtil.tradeHasExactly(trade, xi.item.DELKFUTT_KEY)
+                        npcUtil.tradeMatches(trade, { { xi.item.DELKFUTT_KEY, 1 } })
                     then
-                        return mission:progressEvent(0)
+                        return mission:progressCutscene(0)
                     end
                 end,
 
                 onTrigger = function(player, npc)
                     if player:getMissionStatus(mission.areaId) == 4 then
                         if player:hasKeyItem(xi.ki.DELKFUTT_KEY) then
-                            return mission:progressEvent(0)
+                            return mission:progressCutscene(0)
                         else
                             return mission:messageSpecial(lowerDelkfuttID.text.THE_DOOR_IS_FIRMLY_SHUT_OPEN_KEY):setPriority(1000)
                         end
@@ -220,7 +220,7 @@ mission.sections =
 
                     if not player:hasKeyItem(xi.ki.DELKFUTT_KEY) then
                         npcUtil.giveKeyItem(player, xi.ki.DELKFUTT_KEY)
-                        player:confirmTrade()
+                        player:tradeComplete()
                     end
                 end,
             },

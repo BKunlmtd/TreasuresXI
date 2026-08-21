@@ -19,29 +19,31 @@ entity.onTrigger = function(player, npc)
         if VanadielDayOfTheYear() % 2 == 0 then
             if
                 brassDoor and
-                brassDoor:getAnimation() == xi.anim.CLOSE_DOOR and
-                npc:getAnimation() == xi.anim.CLOSE_DOOR
+                brassDoor:getAnimation() == xi.animation.CLOSE_DOOR and
+                npc:getAnimation() == xi.animation.CLOSE_DOOR
             then
                 npc:openDoor(8)
-                -- wait 1 second delay goes here
-                brassDoor:openDoor(6)
+                npc:timer(1500, function(npcArg)
+                    brassDoor:openDoor(6)
+                end)
             end
         else
             if
                 trapDoor and
-                trapDoor:getAnimation() == xi.anim.CLOSE_DOOR and
-                npc:getAnimation() == xi.anim.CLOSE_DOOR
+                trapDoor:getAnimation() == xi.animation.CLOSE_DOOR and
+                npc:getAnimation() == xi.animation.CLOSE_DOOR
             then
                 npc:openDoor(8)
-                -- wait 1 second delay goes here
-                trapDoor:openDoor(6)
+                npc:timer(1500, function(npcArg)
+                    trapDoor:openDoor(6)
+                end)
             end
 
             if
                 player:getCurrentMission(xi.mission.log_id.WINDURST) == xi.mission.id.windurst.TO_EACH_HIS_OWN_RIGHT and
                 player:getMissionStatus(player:getNation()) == 3
             then
-                player:startEvent(43)
+                player:startCutscene(43)
             end
         end
     else

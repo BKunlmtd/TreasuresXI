@@ -84,16 +84,16 @@ mission.sections =
                 onTrade = function(player, npc, trade)
                     if
                         player:getMissionStatus(mission.areaId) == 2 and
-                        npcUtil.tradeHasExactly(trade, xi.item.DELKFUTT_KEY)
+                        npcUtil.tradeMatches(trade, { { xi.item.DELKFUTT_KEY, 1 } })
                     then
-                        return mission:progressEvent(2)
+                        return mission:progressCutscene(2)
                     end
                 end,
 
                 onTrigger = function(player, npc)
                     if player:getMissionStatus(mission.areaId) == 2 then
                         if player:hasKeyItem(xi.ki.DELKFUTT_KEY) then
-                            return mission:progressEvent(2)
+                            return mission:progressCutscene(2)
                         else
                             return mission:messageSpecial(lowerDelkfuttID.text.THE_DOOR_IS_FIRMLY_SHUT_OPEN_KEY):setPriority(1000)
                         end
@@ -107,7 +107,7 @@ mission.sections =
                     player:setMissionStatus(mission.areaId, 3)
 
                     if not player:hasKeyItem(xi.ki.DELKFUTT_KEY) then
-                        player:confirmTrade()
+                        player:tradeComplete()
                         npcUtil.giveKeyItem(player, xi.ki.DELKFUTT_KEY)
                     end
                 end,

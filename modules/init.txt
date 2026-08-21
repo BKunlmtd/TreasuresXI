@@ -12,6 +12,8 @@
 # - cpp files are loaded and built with CMake.
 # - lua files are loaded at runtime by the main program.
 # - sql files are loaded either by dbtool, or by hand.
+# - sql under era/sql/<expansion>/ is applied by dbtool when listed; list the
+#   expansion folders you want. Listing plain 'era' includes all of them.
 #
 # Examples:
 #
@@ -37,6 +39,7 @@
 # Live example:
 
 custom/commands/
+custom/lua/test_npcs_in_gm_home.lua
 custom/lua/announce_player_login.lua
 custom/lua/homepoint_heal.lua
 custom/lua/LQS.lua
@@ -45,3 +48,4 @@ custom/sql/zone_ip.sql
 custom/cpp/ah_pagination.cpp
 custom/cpp/lqs_util.cpp
 abyssea/lua/era_HNM_system.lua
+
